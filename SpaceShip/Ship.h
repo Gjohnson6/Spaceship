@@ -5,5 +5,8 @@ public:
 	Ship();
 	~Ship();
 	void drawShip();
+private:
+	void drawBody();
+	void drawThruster();
 };
 
