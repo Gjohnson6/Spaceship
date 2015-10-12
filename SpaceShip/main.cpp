@@ -50,12 +50,18 @@ float DegreesToRadians(float degrees)
 
 void Redisplay()
 {
+	
+	cout << "Redisplay" << endl;
+
+	//Works but no rockets in third person
 	/*
 	glutSetWindow(firstPersonWindow);
 	glutPostRedisplay();
-	wglShareLists(firstPersonHGLRC, thirdPersonHGLRC);
 	glutSetWindow(thirdPersonWindow);
 	glutPostRedisplay();*/
+
+	//'Works' but very buggy
+	/*
 	SwapBuffers(firstPersonHDC);
 	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
 	FirstPersonDisplayFunc();
@@ -63,7 +69,14 @@ void Redisplay()
 
 	SwapBuffers(thirdPersonHDC);
 	wglMakeCurrent(thirdPersonHDC, thirdPersonHGLRC);
+	ThirdPersonDisplayFunc();*/
+	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
+	FirstPersonDisplayFunc();
+	wglShareLists(firstPersonHGLRC, thirdPersonHGLRC);
+	SwapBuffers(firstPersonHDC);
+	wglMakeCurrent(thirdPersonHDC, thirdPersonHGLRC);
 	ThirdPersonDisplayFunc();
+	SwapBuffers(thirdPersonHDC);
 }
 
 bool GLReturnedError(char * s)
@@ -104,7 +117,8 @@ void FirstPersonReshapeFunc(int w, int h)
 {
 	width = w;
 	height = h;
-	Redisplay();
+	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
+	FirstPersonDisplayFunc();
 }
 void DrawFrustum();
 
@@ -112,7 +126,7 @@ void FirstPersonDisplayFunc()
 {
 	int elapsed_time = glutGet(GLUT_ELAPSED_TIME);
 
-	cout << "First person display func" << endl;
+	//cout << "First person display func" << endl;
 	GLReturnedError("Entering DisplayFunc");
 
 	glClearColor(51 / 255.0f, 51 / 255.0f, 51 / 255.0f, 1.0f);
@@ -129,7 +143,6 @@ void FirstPersonDisplayFunc()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	DrawFrustum();
 	glRotated(45, 0.0, 1.0, 0.0);
 	DrawMany();
 	
@@ -151,7 +164,6 @@ void DrawThirdPerson()
 	glVertex3d(-(cameraX)* .75, -(cameraY)*.75, -(cameraZ)*.75);
 	glEnd();
 
-	DrawFrustum();
 
 	GLUquadricObj* quadric;
 	quadric = gluNewQuadric();
@@ -168,6 +180,7 @@ void DrawThirdPerson()
 	glCullFace(GL_FRONT);
 	glColor3d(153/255.0f, 153/255.0f, 153/255.0f);
 	gluSphere(quadric, 15, 40, 18);
+	DrawFrustum();
 	glPopMatrix();
 	glCullFace(GL_BACK);
 	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ? GL_FILL : GL_LINE);
@@ -205,10 +218,10 @@ void DrawFrustum()
 	double temp = -12 / frustumCoordinates[1].z;
 
 	//change to GL_QUADS?
+	//
 	glBegin(GL_LINES);
-	glColor3d(1.0, 1.0, 1.0);
-	cout << frustumCoordinates[0].x << " " << frustumCoordinates[0].y << " " << frustumCoordinates[0].z << endl;
-	cout << frustumCoordinates[1].x << " " << frustumCoordinates[1].y << " " << frustumCoordinates[1].z << endl;
+	//cout << frustumCoordinates[0].x << " " << frustumCoordinates[0].y << " " << frustumCoordinates[0].z << endl;
+	//cout << frustumCoordinates[1].x << " " << frustumCoordinates[1].y << " " << frustumCoordinates[1].z << endl;
 	glVertex3d(frustumCoordinates[0].x, frustumCoordinates[0].y, frustumCoordinates[0].z);
 	glVertex3d(frustumCoordinates[1].x, frustumCoordinates[1].y, frustumCoordinates[1].z);
 
@@ -247,6 +260,21 @@ void DrawFrustum()
 	glVertex3d(frustumCoordinates[7].x, frustumCoordinates[7].y, frustumCoordinates[7].z);
 
 	glEnd();
+	
+	//Draw spheres at cornrs
+	GLUquadricObj* quadric;
+	quadric = gluNewQuadric();
+	glColor3d(1.0, 1.0, 1.0);
+	for (int vertex = 0; vertex < 8; vertex++)//Go through each vertex in frustumCoordinates
+	{
+		glPushMatrix();
+		glTranslated(frustumCoordinates[vertex].x, frustumCoordinates[vertex].y, frustumCoordinates[vertex].z);//Translate to that vertex
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		gluSphere(quadric, .25, 10, 10);//Draw a sphere
+		glPopMatrix();
+	}
+
+	gluDeleteQuadric(quadric);
 
 	glPopMatrix();
 	
@@ -264,9 +292,9 @@ void ThirdPersonDisplayFunc()
 	double hScale = tpWidth / (double)1024;
 	double vScale = tpHeight / (double)512;
 	double scale = hScale / vScale;
-	cout << "Display" << endl;
+	//cout << "Display" << endl;
 
-	glOrtho(-(hScale * 25), hScale * 25, -( 25), 25, 0, 100);
+	glOrtho(-(25/vScale) * hScale, 25/vScale * hScale,  -(25), 25, 0, 100);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -296,7 +324,8 @@ void ThirdPersonReshapeFunc(int w, int h)
 	tpWidth = w;
 	tpHeight = h;
 
-	glutPostRedisplay();
+	wglMakeCurrent(thirdPersonHDC, thirdPersonHGLRC);
+	ThirdPersonDisplayFunc();
 }
 
 
@@ -317,6 +346,7 @@ void TimerFunc(int period)
 	SwapBuffers(thirdPersonHDC);
 	wglMakeCurrent(thirdPersonHDC, thirdPersonHGLRC);
 	ThirdPersonDisplayFunc();*/
+
 }
 
 void UpdateCamera()
@@ -334,11 +364,9 @@ void SpecialFunc(int key, int x, int y)
 	{
 	case GLUT_KEY_PAGE_UP:
 		vFOV = vFOV + 1 <= 80 ? vFOV += 1.0 : vFOV = 80;
-		glutPostRedisplay();
 		break;
 	case GLUT_KEY_PAGE_DOWN:
 		vFOV = vFOV - 1 >= 10 ? vFOV -= 1.0 : vFOV = 10;
-		Redisplay();
 		break;
 	case GLUT_KEY_UP:
 		xAngle = xAngle < 89 ? xAngle += 1.0 : xAngle = 89;
@@ -353,27 +381,24 @@ void SpecialFunc(int key, int x, int y)
 		ThirdPersonDisplayFunc();
 		SwapBuffers(firstPersonHDC);*/
 
-		Redisplay();
 		break;
 	case GLUT_KEY_DOWN:
 		xAngle = xAngle > -89 ? xAngle -= 1.0 : xAngle = -89;
 		UpdateCamera();
-		Redisplay();
 
 		break;
 	case GLUT_KEY_LEFT:
 		yAngle += 1.0;
 		UpdateCamera();
-		Redisplay();
 		break;
 	case GLUT_KEY_RIGHT:
 		yAngle -= 1.0;
 		UpdateCamera();
-		Redisplay();
 		break;
 	default:
 		break;
 	}
+	Redisplay();
 }
 
 void SpecialFunc2(int key, int x, int y)
@@ -401,28 +426,29 @@ void SpecialFunc2(int key, int x, int y)
 		ThirdPersonDisplayFunc();
 		SwapBuffers(firstPersonHDC);
 		*/
-		Redisplay();
+		//Redisplay();
 		break;
 	case GLUT_KEY_DOWN:
 		xAngle = xAngle > -89 ? xAngle -= 1.0 : xAngle = -89;
 
-		UpdateCamera();
+		//UpdateCamera();
 		//Redisplay();
 		break;
 	case GLUT_KEY_LEFT:
 		yAngle += 1.0;
-		UpdateCamera();
+		//UpdateCamera();
 		//Redisplay();
 		break;
 	case GLUT_KEY_RIGHT:
 		yAngle -= 1.0;
 		UpdateCamera();
-		glutPostRedisplay();
+		//glutPostRedisplay();
 		//Redisplay();
 		break;
 	default:
 		break;
 	}
+	Redisplay();
 }
 
 void KeyboardFunc(unsigned char c, int x, int y)
@@ -441,6 +467,7 @@ void KeyboardFunc(unsigned char c, int x, int y)
 	default:
 		break;
 	}
+	Redisplay();
 }
 
 
@@ -459,7 +486,7 @@ int main(int argc, char * argv[])
 	glutKeyboardFunc(KeyboardFunc);
 	glutSpecialFunc(SpecialFunc);
 	glutDisplayFunc(FirstPersonDisplayFunc);
-	//glutTimerFunc(1000 / 60, TimerFunc, 1000 / 60);
+	glutTimerFunc(1000 / 60, TimerFunc, 1000 / 60);
 
 	glutInitWindowPosition(width, height);
 	glutInitWindowSize(tpWidth, tpHeight);
