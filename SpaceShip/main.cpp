@@ -6,6 +6,7 @@
 #include "glm\gtc\matrix_inverse.hpp"
 #include "glm\detail\func_geometric.hpp"
 #include <iostream>
+#include <string>
 
 using namespace std;
 using namespace glm;
@@ -43,33 +44,20 @@ void FirstPersonDisplayFunc();
 void ThirdPersonDisplayFunc();
 
 
-float DegreesToRadians(float degrees)
+inline float DegreesToRadians(float degrees)
 {
 	return degrees / 180.0f * pi<float>();
 }
 
+inline void DisplayString(string stringToDisplay)
+{
+	const unsigned char* cstring = (const unsigned char*)stringToDisplay.c_str();
+
+	glutStrokeString(GLUT_STROKE_ROMAN, cstring);
+}
+
 void Redisplay()
 {
-	
-	cout << "Redisplay" << endl;
-
-	//Works but no rockets in third person
-	/*
-	glutSetWindow(firstPersonWindow);
-	glutPostRedisplay();
-	glutSetWindow(thirdPersonWindow);
-	glutPostRedisplay();*/
-
-	//'Works' but very buggy
-	/*
-	SwapBuffers(firstPersonHDC);
-	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
-	FirstPersonDisplayFunc();
-	wglShareLists(firstPersonHGLRC, thirdPersonHGLRC);
-
-	SwapBuffers(thirdPersonHDC);
-	wglMakeCurrent(thirdPersonHDC, thirdPersonHGLRC);
-	ThirdPersonDisplayFunc();*/
 	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
 	FirstPersonDisplayFunc();
 	wglShareLists(firstPersonHGLRC, thirdPersonHGLRC);
@@ -112,84 +100,6 @@ void DrawMany()
 	}
 }
 
-//First Person Window Functions
-void FirstPersonReshapeFunc(int w, int h)
-{
-	width = w;
-	height = h;
-	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
-	FirstPersonDisplayFunc();
-}
-void DrawFrustum();
-
-void FirstPersonDisplayFunc()
-{
-	int elapsed_time = glutGet(GLUT_ELAPSED_TIME);
-
-	//cout << "First person display func" << endl;
-	GLReturnedError("Entering DisplayFunc");
-
-	glClearColor(51 / 255.0f, 51 / 255.0f, 51 / 255.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(vFOV, width / (double)height, 3.0, 23);
-
-
-	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ?  GL_FILL : GL_LINE);
-	glViewport(0, 0, width, height);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	glRotated(45, 0.0, 1.0, 0.0);
-	DrawMany();
-	
-	/*
-	glScaled(.25, .25, .25);
-	const unsigned char chars[] = { 'M', 't' };
-	glutStrokeString(GLUT_STROKE_ROMAN ,  chars);*/
-	wglShareLists(firstPersonHGLRC, thirdPersonHGLRC);
-	glutSwapBuffers();
-	glFlush();
-}
-
-//Third Person Window Functions
-void DrawThirdPerson()
-{
-	glBegin(GL_LINES);
-	glColor3d(1., 1.0, 1.0);
-	glVertex3d(cameraX, cameraY, cameraZ);
-	glVertex3d(-(cameraX)* .75, -(cameraY)*.75, -(cameraZ)*.75);
-	glEnd();
-
-
-	GLUquadricObj* quadric;
-	quadric = gluNewQuadric();
-	glPushMatrix();
-	glTranslated(cameraX, cameraY, cameraZ);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	gluSphere(quadric, .5, 10, 10);
-	glPopMatrix();
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	glPushMatrix();
-	gluQuadricDrawStyle(quadric, GL_LINE);
-	glLineWidth(0.1);
-	glCullFace(GL_FRONT);
-	glColor3d(153/255.0f, 153/255.0f, 153/255.0f);
-	gluSphere(quadric, 15, 40, 18);
-	DrawFrustum();
-	glPopMatrix();
-	glCullFace(GL_BACK);
-	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ? GL_FILL : GL_LINE);
-	glRotated(45, 0.0, 1.0, 0.0);
-	
-	DrawMany();
-	gluDeleteQuadric(quadric);
-}
-
 void DrawFrustum()
 {
 	int coordNum = 0;
@@ -201,7 +111,7 @@ void DrawFrustum()
 			{				
 				mat4 fpmv = lookAt(cameraCoords, vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
 
-				mat4 fpp = perspective((double)DegreesToRadians(vFOV), width / (double)height, 3.0, 23.0);
+				mat4 fpp = perspective((float)DegreesToRadians((float)vFOV), width / (float)height, 3.0f, 23.0f);
 				
 				frustumCoordinates[coordNum] = inverse(fpmv) * inverse(fpp) * vec4(x, y, z, 1.0f);
 
@@ -280,6 +190,115 @@ void DrawFrustum()
 	
 }
 
+
+//First Person Window Functions
+void FirstPersonReshapeFunc(int w, int h)
+{
+	width = w;
+	height = h;
+	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
+	FirstPersonDisplayFunc();
+}
+
+void FirstPersonDisplayFunc()
+{
+	int elapsed_time = glutGet(GLUT_ELAPSED_TIME);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//cout << "First person display func" << endl;
+	GLReturnedError("Entering DisplayFunc");
+	glClearColor(51 / 255.0f, 51 / 255.0f, 51 / 255.0f, 1.0f);
+
+	//Draw Rockets
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(vFOV, width / (double)height, 3.0, 23);
+
+
+	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ?  GL_FILL : GL_LINE);
+	glViewport(0, 0, width, height);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glMatrixMode(GL_MODELVIEW);
+	//glPopMatrix();
+	glLoadIdentity();
+	gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	glRotated(45, 0.0, 1.0, 0.0);
+	DrawMany();
+	
+	/*
+	glScaled(.25, .25, .25);
+	const unsigned char chars[] = { 'M', 't' };
+	glutStrokeString(GLUT_STROKE_ROMAN ,  chars);*/
+	
+	//Draw Text
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glOrtho(0, width, 0, height, 0, 100);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glPushMatrix();
+	//glTranslated(-1, 0.0, 0.0);
+
+	glColor3d(1.0, 1.0, 1.0);
+	glRasterPos2i(20, 20);
+	glTranslated(0, 90.0, 0.0);
+	//const unsigned char chars[] = { 'M', 't', '\n', 'h'};
+	glRasterPos2d(2.0, 2.0);
+	glScaled(.15, .15, .15);
+	//glutStrokeString(GLUT_STROKE_ROMAN, chars);
+	DisplayString("w - toggles wireframe \nx - exits\nLeft / Right; Up / Down; Page Up / Page Down\n\n");
+	glScaled(2.5, 2.5, 2.5);
+	DisplayString("Perspective View");
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+
+	wglShareLists(firstPersonHGLRC, thirdPersonHGLRC);
+	glutSwapBuffers();
+	glFlush();
+}
+
+//Third Person Window Functions
+void DrawThirdPerson()
+{
+	glBegin(GL_LINES);
+	glColor3d(1., 1.0, 1.0);
+	glVertex3d(cameraX, cameraY, cameraZ);
+	glVertex3d(-(cameraX)* .75, -(cameraY)*.75, -(cameraZ)*.75);
+	glEnd();
+
+
+	GLUquadricObj* quadric;
+	quadric = gluNewQuadric();
+	glPushMatrix();
+	glTranslated(cameraX, cameraY, cameraZ);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	gluSphere(quadric, .5, 10, 10);
+	glPopMatrix();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glPushMatrix();
+	gluQuadricDrawStyle(quadric, GL_LINE);
+	glLineWidth(0.1f);
+	glCullFace(GL_FRONT);
+	glColor3d(153/255.0f, 153/255.0f, 153/255.0f);
+	gluSphere(quadric, 15, 40, 18);
+	DrawFrustum();
+	glPopMatrix();
+	glCullFace(GL_BACK);
+	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ? GL_FILL : GL_LINE);
+	glRotated(45, 0.0, 1.0, 0.0);
+	
+	DrawMany();
+	gluDeleteQuadric(quadric);
+}
+
 void ThirdPersonDisplayFunc()
 {
 	int elapsed_time = glutGet(GLUT_ELAPSED_TIME);
@@ -291,8 +310,6 @@ void ThirdPersonDisplayFunc()
 
 	double hScale = tpWidth / (double)1024;
 	double vScale = tpHeight / (double)512;
-	double scale = hScale / vScale;
-	//cout << "Display" << endl;
 
 	glOrtho(-(25/vScale) * hScale, 25/vScale * hScale,  -(25), 25, 0, 100);
 
@@ -302,19 +319,61 @@ void ThirdPersonDisplayFunc()
 	glLoadIdentity();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	//for text: glutStrokeString()
-
+	//Z Axis Perspective
 	glViewport(0, 0, tpWidth/2, tpHeight);
 	glPushMatrix();
 	gluLookAt(0.0, 0.0, 50.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	
 	DrawThirdPerson();
-
+	
 	glPopMatrix();
+
+	//Draw Text
+	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+
+	glOrtho(0, tpWidth/2, 0, tpHeight, 0, 100);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	//glTranslated(-1, 0.0, 0.0);
+
+	glColor3d(1.0, 1.0, 1.0);
+	glRasterPos2i(20, 20);
+	glTranslated(0, 5.0, 0.0);
+	glScaled(.15, .15, .15);
+	DisplayString("Z Axis View");
+	glPopMatrix();
+
+
+	//X Axis Perspective
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-(25 / vScale) * hScale, 25 / vScale * hScale, -(25), 25, 0, 100);
+	glMatrixMode(GL_MODELVIEW);
+
 	glViewport(tpWidth / 2, 0, tpWidth / 2, tpHeight);
 	gluLookAt(50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	DrawThirdPerson();
+
+	//Draw Text
+	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glOrtho(0, tpWidth / 2, 0, tpHeight, 0, 100);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	//glTranslated(-1, 0.0, 0.0);
+
+	glColor3d(1.0, 1.0, 1.0);
+	glRasterPos2i(20, 20);
+	glTranslated(0, 5.0, 0.0);
+	glScaled(.15, .15, .15);
+	DisplayString("X Axis View");
+	glPopMatrix();
+
+
 	glutSwapBuffers();
 	glFlush();
 }
