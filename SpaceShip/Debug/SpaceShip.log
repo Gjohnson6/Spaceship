@@ -1,14 +1,14 @@
-﻿Build started 10/15/2015 11:38:32 PM.
-     1>Project "C:\Users\Grant\Documents\Visual Studio 2015\Projects\SpaceShip\SpaceShip\SpaceShip.vcxproj" on node 2 (Build target(s)).
+﻿Build started 10/18/2015 1:35:02 AM.
+     1>Project "C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\SpaceShip\SpaceShip.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /IC:\Users\Grant/Documents/freeglut/include /IC:\Users\Grant\Documents\glm /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /IC:\Users\Grant/Documents/freeglut/include /IC:\Users\Grant\Documents\glm /IC:\Users\Grant\Documents\glm /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
          main.cpp
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Grant\Documents\Visual Studio 2015\Projects\SpaceShip\Debug\SpaceShip.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\Users\Grant\Documents\freeglut\lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib freeglut.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Grant\Documents\Visual Studio 2015\Projects\SpaceShip\Debug\SpaceShip.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Grant\Documents\Visual Studio 2015\Projects\SpaceShip\Debug\SpaceShip.lib" /MACHINE:X86 Debug\main.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\Debug\SpaceShip.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\Users\Grant\Documents\freeglut\lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib freeglut.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\Debug\SpaceShip.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\Debug\SpaceShip.lib" /MACHINE:X86 Debug\main.obj
          Debug\Ship.obj
-         SpaceShip.vcxproj -> C:\Users\Grant\Documents\Visual Studio 2015\Projects\SpaceShip\Debug\SpaceShip.exe
-     1>Done Building Project "C:\Users\Grant\Documents\Visual Studio 2015\Projects\SpaceShip\SpaceShip\SpaceShip.vcxproj" (Build target(s)).
+         SpaceShip.vcxproj -> C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\Debug\SpaceShip.exe
+     1>Done Building Project "C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\SpaceShip\SpaceShip.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.17
+Time Elapsed 00:00:01.15

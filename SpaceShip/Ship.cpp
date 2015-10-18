@@ -66,6 +66,11 @@ void Ship::DrawBody()
 	glScaled(.75, 2.5, .75);
 	glColor3d(1.0, 0.0, 0.0);
 
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, blue);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white );
+
+
 	GLUquadricObj* quadric;
 	quadric = gluNewQuadric();
 
@@ -90,10 +95,12 @@ void Ship::DrawThruster()
 	glColor3d(0.0, 1.0, 1.0);
 	glTranslated(0.0, 0.0, 1.0);
 	glScaled(1.0, 1.0, 1.75);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,red);
+
 	gluSphere(quadric, .25, 30, 30);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, blue);
 
-
-	glColor3d(1.0, 20 / 255.0, 147 / 255.0);
+	glColor3d(1.0, 20 / 255.0, 14 / 255.0);
 	glRotated(90, 0.0, -1.0, 0.0);
 	glTranslated(-.35, 0.0, 0.0);
 	glScaled(1.0, .5, 1.0);

@@ -21,34 +21,36 @@ HGLRC thirdPersonHGLRC;
 
 Ship ships[16];
 
-int width = 512;
-int height = 512;
-int tpWidth = 1024;
-int tpHeight = 512;
-double xPos = 0.0;
-double zPos = 4.5;
-double vFOV = 50;
-bool wireFrameMode = true;
-float xAngle = 0.0;
-float yAngle  = 90.0;
-vec4 frustumCoordinates[8];
+int width = 512;//Width of the first person window in pixels
+int height = 512;//Height of the first person window in pixels
+int tpWidth = 1024;//Width of the third person window in pixels
+int tpHeight = 512;//Height of the third person window in pixels
+int lightPosition = 1;//Determines where the light is positioned.
+int elapsed_time = 0;
+double vFOV = 50;//Vertical field of view in the first person window
+bool wireFrameMode = true;//Boolean to determine if the models are rendered as wireframes
+bool lighting = true; //Boolean to determine if lighting is on or off
+bool flatShading = false;//Boolean to determine if shading is flat or smooth
+float xAngle = 0.0;//Angle of the camera around the X axis
+float yAngle  = 90.0;//Angle of camera around the Y axis
+float lightAngle = 90.0;//Angle of the orbiting light around the Y axis
 
-double cameraX = 0.0;
-double cameraY = 0.0;
-double cameraZ = 15.0;
+double cameraX = 0.0;//Camera's x position
+double cameraY = 0.0;//Camera's Y position
+double cameraZ = 15.0;//Camera's Z position
 
-vec3 cameraCoords = {0.0f, 0.0f, 15.0f};
-
+vec4 frustumCoordinates[8];//Coordinates of the corners of the frustum
 
 void FirstPersonDisplayFunc();
 void ThirdPersonDisplayFunc();
 
-
+//Converts Degrees to radians
 inline float DegreesToRadians(float degrees)
 {
 	return degrees / 180.0f * pi<float>();
 }
 
+//Displays a string on screen
 inline void DisplayString(string stringToDisplay)
 {
 	const unsigned char* cstring = (const unsigned char*)stringToDisplay.c_str();
@@ -56,6 +58,7 @@ inline void DisplayString(string stringToDisplay)
 	glutStrokeString(GLUT_STROKE_ROMAN, cstring);
 }
 
+//Updates both the first person and third person windows
 void Redisplay()
 {
 	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
@@ -67,6 +70,7 @@ void Redisplay()
 	SwapBuffers(thirdPersonHDC);
 }
 
+//Outputs any errors
 bool GLReturnedError(char * s)
 {
 	bool return_error = false;
@@ -81,6 +85,7 @@ bool GLReturnedError(char * s)
 	return return_error;
 }
 
+//Draws the rockets in a grid pattern
 void DrawMany()
 {
 	int shipNum = 0;
@@ -100,6 +105,7 @@ void DrawMany()
 	}
 }
 
+//Finds the frustum coordinates of the first person window's camera and draws the frustum
 void DrawFrustum()
 {
 	int coordNum = 0;
@@ -109,9 +115,9 @@ void DrawFrustum()
 		{
 			for (float z = -1; z <= 1; z +=2)
 			{				
-				mat4 fpmv = lookAt(cameraCoords, vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
+				mat4 fpmv = lookAt(vec3(cameraX, cameraY, cameraZ), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
 
-				mat4 fpp = perspective((float)DegreesToRadians((float)vFOV), width / (float)height, 3.0f, 23.0f);
+				mat4 fpp = perspective((float)DegreesToRadians((float)vFOV), width / (float)height, 3.0f, 22.5f);
 				
 				frustumCoordinates[coordNum] = inverse(fpmv) * inverse(fpp) * vec4(x, y, z, 1.0f);
 
@@ -125,13 +131,8 @@ void DrawFrustum()
 
 	//Draw Frustum
 	glPushMatrix();
-	double temp = -12 / frustumCoordinates[1].z;
-
-	//change to GL_QUADS?
-	//
 	glBegin(GL_LINES);
-	//cout << frustumCoordinates[0].x << " " << frustumCoordinates[0].y << " " << frustumCoordinates[0].z << endl;
-	//cout << frustumCoordinates[1].x << " " << frustumCoordinates[1].y << " " << frustumCoordinates[1].z << endl;
+
 	glVertex3d(frustumCoordinates[0].x, frustumCoordinates[0].y, frustumCoordinates[0].z);
 	glVertex3d(frustumCoordinates[1].x, frustumCoordinates[1].y, frustumCoordinates[1].z);
 
@@ -168,10 +169,9 @@ void DrawFrustum()
 
 	glVertex3d(frustumCoordinates[6].x, frustumCoordinates[6].y, frustumCoordinates[6].z);
 	glVertex3d(frustumCoordinates[7].x, frustumCoordinates[7].y, frustumCoordinates[7].z);
-
 	glEnd();
 	
-	//Draw spheres at cornrs
+	//Draw spheres at corners
 	GLUquadricObj* quadric;
 	quadric = gluNewQuadric();
 	glColor3d(1.0, 1.0, 1.0);
@@ -180,14 +180,77 @@ void DrawFrustum()
 		glPushMatrix();
 		glTranslated(frustumCoordinates[vertex].x, frustumCoordinates[vertex].y, frustumCoordinates[vertex].z);//Translate to that vertex
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		gluSphere(quadric, .25, 10, 10);//Draw a sphere
+		gluSphere(quadric, .1, 10, 10);//Draw a sphere
 		glPopMatrix();
 	}
 
 	gluDeleteQuadric(quadric);
+	glPopMatrix();	
+}
 
-	glPopMatrix();
-	
+void orbitLight(GLfloat* lightPos)
+{
+	lightAngle = (lightAngle + (360 / (1000/60.f) / 100.f));//Takes 10 seconds to complete an orbit. Divided by 60 to account for the fact that this should be called 60 times a second
+	lightPos[0] = float(15.0 * cos(DegreesToRadians(0)) * cos(DegreesToRadians(lightAngle)));
+	lightPos[2] = float(15.0 * cos(DegreesToRadians(0)) * sin(DegreesToRadians(lightAngle)));
+}
+
+void configureLighting()
+{
+	if (lighting)
+	{
+		GLfloat ambientColor[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+		GLfloat lightPos[4] = { 0, 0, 0, 1 };
+
+		switch (lightPosition)
+		{
+		case 1://Camera
+			lightPos[0] = float(cameraX);
+			lightPos[1] = float(cameraY);
+			lightPos[2] = float(cameraZ);
+			lightAngle = 90.f;
+			break;
+		case 2://Center
+			lightPos[0] = 0;
+			lightPos[1] = 0;
+			lightPos[2] = 0;
+			lightAngle = 90.f;
+			break;
+		case 3://x
+		case 4://y
+		case 5://z
+			lightPos[lightPosition - 3] = 15;
+			lightPos[(lightPosition - 2) % 3] = 0;
+			lightPos[(lightPosition - 1) % 3] = 0;
+			lightAngle = 90.f;
+			break;
+		case 6://Orbiting
+			orbitLight(lightPos);
+			break;
+		default:
+			break;
+		}
+		GLfloat lightAmb[] = { 0.f, 0.f, 0.f, 1.f };
+		GLfloat lightDif[] = { 1.f, 1.f, 1.f, 1.0f };
+		GLfloat lightSpec[] = {1.f, 1.f, 1.f, 1.f };
+		GLfloat lightSpot[] = { 1 };
+		glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+		glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmb);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDif);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpec);
+		//glLightfv(GL_LIGHT0, GL_SPOT_EXPONENT, lightSpot);
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+
+		glShadeModel(flatShading ? GL_FLAT : GL_SMOOTH);
+		
+	}
+	else
+	{
+		glDisable(GL_LIGHTING);
+		glDisable(GL_LIGHT0);
+	}
 }
 
 
@@ -202,36 +265,35 @@ void FirstPersonReshapeFunc(int w, int h)
 
 void FirstPersonDisplayFunc()
 {
-	int elapsed_time = glutGet(GLUT_ELAPSED_TIME);
-
+	elapsed_time = glutGet(GLUT_ELAPSED_TIME);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//cout << "First person display func" << endl;
 	GLReturnedError("Entering DisplayFunc");
 	glClearColor(51 / 255.0f, 51 / 255.0f, 51 / 255.0f, 1.0f);
 
 	//Draw Rockets
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(vFOV, width / (double)height, 3.0, 23);
-
+	gluPerspective(vFOV, width / (double)height, 3.0, 22.5);
 
 	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ?  GL_FILL : GL_LINE);
 	glViewport(0, 0, width, height);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_NORMALIZE);
+
+	//glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	//glEnable(GL_COLOR_MATERIAL);
 	glMatrixMode(GL_MODELVIEW);
-	//glPopMatrix();
 	glLoadIdentity();
 	gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	glRotated(45, 0.0, 1.0, 0.0);
-	DrawMany();
 	
-	/*
-	glScaled(.25, .25, .25);
-	const unsigned char chars[] = { 'M', 't' };
-	glutStrokeString(GLUT_STROKE_ROMAN ,  chars);*/
+	configureLighting();
+	glRotated(45, 0.0, 1.0, 0.0);
+
+	DrawMany();	
 	
 	//Draw Text
+	glDisable(GL_LIGHTING);
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -241,23 +303,18 @@ void FirstPersonDisplayFunc()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glPushMatrix();
-	//glTranslated(-1, 0.0, 0.0);
-
 	glColor3d(1.0, 1.0, 1.0);
 	glRasterPos2i(20, 20);
-	glTranslated(0, 90.0, 0.0);
-	//const unsigned char chars[] = { 'M', 't', '\n', 'h'};
+	glTranslated(5.0, 140.0, 0.0);
 	glRasterPos2d(2.0, 2.0);
-	glScaled(.15, .15, .15);
-	//glutStrokeString(GLUT_STROKE_ROMAN, chars);
-	DisplayString("w - toggles wireframe \nx - exits\nLeft / Right; Up / Down; Page Up / Page Down\n\n");
+	glScaled(.12, .12, .12);
+	DisplayString("l - toggles lighting\n1-6 - changes light position\nf - toggles flat shading\nw - toggles wireframe \nx - exits\nLeft / Right; Up / Down; Page Up / Page Down\n\n");
 	glScaled(2.5, 2.5, 2.5);
 	DisplayString("Perspective View");
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
-
 
 	wglShareLists(firstPersonHGLRC, thirdPersonHGLRC);
 	glutSwapBuffers();
@@ -267,13 +324,19 @@ void FirstPersonDisplayFunc()
 //Third Person Window Functions
 void DrawThirdPerson()
 {
+	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ? GL_FILL : GL_LINE);
+	configureLighting();
+	glRotated(45, 0.0, 1.0, 0.0);
+	
+	DrawMany();
+	glDisable(GL_LIGHTING);//Disable lighting so it doesn't affect anything but the rockets
+	glRotated(-45, 0.0, 1.0, 0.0);
 	glBegin(GL_LINES);
 	glColor3d(1., 1.0, 1.0);
 	glVertex3d(cameraX, cameraY, cameraZ);
 	glVertex3d(-(cameraX)* .75, -(cameraY)*.75, -(cameraZ)*.75);
 	glEnd();
-
-
+	
 	GLUquadricObj* quadric;
 	quadric = gluNewQuadric();
 	glPushMatrix();
@@ -288,14 +351,13 @@ void DrawThirdPerson()
 	glLineWidth(0.1f);
 	glCullFace(GL_FRONT);
 	glColor3d(153/255.0f, 153/255.0f, 153/255.0f);
-	gluSphere(quadric, 15, 40, 18);
-	DrawFrustum();
+	gluSphere(quadric, 15, 40, 20);
 	glPopMatrix();
 	glCullFace(GL_BACK);
-	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ? GL_FILL : GL_LINE);
-	glRotated(45, 0.0, 1.0, 0.0);
-	
-	DrawMany();
+	DrawFrustum();
+
+
+
 	gluDeleteQuadric(quadric);
 }
 
@@ -315,6 +377,7 @@ void ThirdPersonDisplayFunc()
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_NORMALIZE);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -330,13 +393,13 @@ void ThirdPersonDisplayFunc()
 
 	//Draw Text
 	glPushMatrix();
+	//glDisable(GL_LIGHTING);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
 	glOrtho(0, tpWidth/2, 0, tpHeight, 0, 100);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	//glTranslated(-1, 0.0, 0.0);
 
 	glColor3d(1.0, 1.0, 1.0);
 	glRasterPos2i(20, 20);
@@ -354,6 +417,7 @@ void ThirdPersonDisplayFunc()
 
 	glViewport(tpWidth / 2, 0, tpWidth / 2, tpHeight);
 	gluLookAt(50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
 	DrawThirdPerson();
 
 	//Draw Text
@@ -364,8 +428,6 @@ void ThirdPersonDisplayFunc()
 	glOrtho(0, tpWidth / 2, 0, tpHeight, 0, 100);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	//glTranslated(-1, 0.0, 0.0);
-
 	glColor3d(1.0, 1.0, 1.0);
 	glRasterPos2i(20, 20);
 	glTranslated(0, 5.0, 0.0);
@@ -392,20 +454,6 @@ void TimerFunc(int period)
 {
 	glutTimerFunc(period, TimerFunc, period);
 	Redisplay();
-	/*
-	SwapBuffers(firstPersonHDC);
-	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);*/
-
-	/*
-	SwapBuffers(firstPersonHDC);
-	wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
-	FirstPersonDisplayFunc();
-	wglShareLists(firstPersonHGLRC, thirdPersonHGLRC);
-
-	SwapBuffers(thirdPersonHDC);
-	wglMakeCurrent(thirdPersonHDC, thirdPersonHGLRC);
-	ThirdPersonDisplayFunc();*/
-
 }
 
 void UpdateCamera()
@@ -413,8 +461,6 @@ void UpdateCamera()
 	cameraX = 15.0 * cos(DegreesToRadians(xAngle)) * cos(DegreesToRadians(yAngle));
 	cameraY = 15.0 * sin(DegreesToRadians(xAngle));
 	cameraZ = 15.0 * cos(DegreesToRadians(xAngle)) * sin(DegreesToRadians(yAngle));
-
-	cameraCoords = {cameraX, cameraY, cameraZ};
 }
 
 void SpecialFunc(int key, int x, int y)
@@ -430,21 +476,10 @@ void SpecialFunc(int key, int x, int y)
 	case GLUT_KEY_UP:
 		xAngle = xAngle < 89 ? xAngle += 1.0 : xAngle = 89;
 		UpdateCamera();
-	
-		//glutPostRedisplay();
-		/*
-		wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
-		FirstPersonDisplayFunc();
-		SwapBuffers(thirdPersonHDC);
-		wglShareLists(thirdPersonHGLRC, thirdPersonHGLRC);
-		ThirdPersonDisplayFunc();
-		SwapBuffers(firstPersonHDC);*/
-
 		break;
 	case GLUT_KEY_DOWN:
 		xAngle = xAngle > -89 ? xAngle -= 1.0 : xAngle = -89;
 		UpdateCamera();
-
 		break;
 	case GLUT_KEY_LEFT:
 		yAngle += 1.0;
@@ -453,56 +488,6 @@ void SpecialFunc(int key, int x, int y)
 	case GLUT_KEY_RIGHT:
 		yAngle -= 1.0;
 		UpdateCamera();
-		break;
-	default:
-		break;
-	}
-	Redisplay();
-}
-
-void SpecialFunc2(int key, int x, int y)
-{
-	switch (key)
-	{
-	case GLUT_KEY_PAGE_UP:
-		vFOV = vFOV + 1 <= 80 ? vFOV += 1.0 : vFOV = 80;
-		//Redisplay();
-		break;
-	case GLUT_KEY_PAGE_DOWN:
-		vFOV = vFOV - 1 >= 10 ? vFOV -= 1.0 : vFOV = 10;
-		//Redisplay();
-		break;
-	case GLUT_KEY_UP:
-		xAngle = xAngle < 89 ? xAngle += 1.0 : xAngle = 89;
-		UpdateCamera();
-
-		//glutPostRedisplay();
-		/*
-		wglMakeCurrent(firstPersonHDC, firstPersonHGLRC);
-		FirstPersonDisplayFunc();
-		SwapBuffers(thirdPersonHDC);
-		wglShareLists(thirdPersonHGLRC, thirdPersonHGLRC);
-		ThirdPersonDisplayFunc();
-		SwapBuffers(firstPersonHDC);
-		*/
-		//Redisplay();
-		break;
-	case GLUT_KEY_DOWN:
-		xAngle = xAngle > -89 ? xAngle -= 1.0 : xAngle = -89;
-
-		//UpdateCamera();
-		//Redisplay();
-		break;
-	case GLUT_KEY_LEFT:
-		yAngle += 1.0;
-		//UpdateCamera();
-		//Redisplay();
-		break;
-	case GLUT_KEY_RIGHT:
-		yAngle -= 1.0;
-		UpdateCamera();
-		//glutPostRedisplay();
-		//Redisplay();
 		break;
 	default:
 		break;
@@ -512,23 +497,35 @@ void SpecialFunc2(int key, int x, int y)
 
 void KeyboardFunc(unsigned char c, int x, int y)
 {
-	cout << "keyfunc" << endl;
 	switch (c)
 	{
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+		lightPosition = (int)c - 48;
+		break;
+
 	case 27:
 	case 'x':
 		glutLeaveMainLoop();
 		break;
+	case 'l':
+		lighting = !lighting;
+		break;
+	case 'f':
+		flatShading = !flatShading;
+		break;
 	case 'w':
 		wireFrameMode = !wireFrameMode;
-		//Redisplay();
 		break;
 	default:
 		break;
 	}
 	Redisplay();
 }
-
 
 
 int main(int argc, char * argv[])
