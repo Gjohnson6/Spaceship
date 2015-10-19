@@ -26,7 +26,6 @@ int height = 512;//Height of the first person window in pixels
 int tpWidth = 1024;//Width of the third person window in pixels
 int tpHeight = 512;//Height of the third person window in pixels
 int lightPosition = 1;//Determines where the light is positioned.
-int elapsed_time = 0;
 double vFOV = 50;//Vertical field of view in the first person window
 bool wireFrameMode = true;//Boolean to determine if the models are rendered as wireframes
 bool lighting = true; //Boolean to determine if lighting is on or off
@@ -232,14 +231,14 @@ void configureLighting()
 			break;
 		}
 		GLfloat lightAmb[] = { 0.f, 0.f, 0.f, 1.f };
-		GLfloat lightDif[] = { 1.f, 1.f, 1.f, 1.0f };
+		GLfloat lightDif[] = { 1.f, 1.f, 1.f, 1.f };
 		GLfloat lightSpec[] = {1.f, 1.f, 1.f, 1.f };
-		GLfloat lightSpot[] = { 1 };
+		GLfloat lightSpot[] = { 0 };
 		glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 		glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmb);
 		glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDif);
 		glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpec);
-		//glLightfv(GL_LIGHT0, GL_SPOT_EXPONENT, lightSpot);
+		glLightfv(GL_LIGHT0, GL_SPOT_EXPONENT, lightSpot);
 		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
 
@@ -265,7 +264,6 @@ void FirstPersonReshapeFunc(int w, int h)
 
 void FirstPersonDisplayFunc()
 {
-	elapsed_time = glutGet(GLUT_ELAPSED_TIME);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	GLReturnedError("Entering DisplayFunc");
 	glClearColor(51 / 255.0f, 51 / 255.0f, 51 / 255.0f, 1.0f);
@@ -281,8 +279,6 @@ void FirstPersonDisplayFunc()
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_NORMALIZE);
 
-	//glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	//glEnable(GL_COLOR_MATERIAL);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
@@ -327,7 +323,6 @@ void DrawThirdPerson()
 	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ? GL_FILL : GL_LINE);
 	configureLighting();
 	glRotated(45, 0.0, 1.0, 0.0);
-	
 	DrawMany();
 	glDisable(GL_LIGHTING);//Disable lighting so it doesn't affect anything but the rockets
 	glRotated(-45, 0.0, 1.0, 0.0);
@@ -363,7 +358,6 @@ void DrawThirdPerson()
 
 void ThirdPersonDisplayFunc()
 {
-	int elapsed_time = glutGet(GLUT_ELAPSED_TIME);
 	GLReturnedError("Entering ThirdPersonDisplayFunc");
 	glClearColor(51 / 255.0f, 51 / 255.0f, 51 / 255.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -385,7 +379,7 @@ void ThirdPersonDisplayFunc()
 	//Z Axis Perspective
 	glViewport(0, 0, tpWidth/2, tpHeight);
 	glPushMatrix();
-	gluLookAt(0.0, 0.0, 50.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0.0, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	
 	DrawThirdPerson();
 	
@@ -393,7 +387,6 @@ void ThirdPersonDisplayFunc()
 
 	//Draw Text
 	glPushMatrix();
-	//glDisable(GL_LIGHTING);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
@@ -407,8 +400,7 @@ void ThirdPersonDisplayFunc()
 	glScaled(.15, .15, .15);
 	DisplayString("Z Axis View");
 	glPopMatrix();
-
-
+	
 	//X Axis Perspective
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -416,7 +408,7 @@ void ThirdPersonDisplayFunc()
 	glMatrixMode(GL_MODELVIEW);
 
 	glViewport(tpWidth / 2, 0, tpWidth / 2, tpHeight);
-	gluLookAt(50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(20.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
 	DrawThirdPerson();
 
@@ -456,6 +448,7 @@ void TimerFunc(int period)
 	Redisplay();
 }
 
+//Update camera's position based on the x and y angles
 void UpdateCamera()
 {
 	cameraX = 15.0 * cos(DegreesToRadians(xAngle)) * cos(DegreesToRadians(yAngle));
@@ -463,22 +456,23 @@ void UpdateCamera()
 	cameraZ = 15.0 * cos(DegreesToRadians(xAngle)) * sin(DegreesToRadians(yAngle));
 }
 
+//Handle special keys
 void SpecialFunc(int key, int x, int y)
 {
 	switch (key)
 	{
 	case GLUT_KEY_PAGE_UP:
-		vFOV = vFOV + 1 <= 80 ? vFOV += 1.0 : vFOV = 80;
+		vFOV = vFOV < 80 ? vFOV += 1.0 : vFOV = 80;//Limit vFOV to <= 80 degrees
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		vFOV = vFOV - 1 >= 10 ? vFOV -= 1.0 : vFOV = 10;
+		vFOV = vFOV > 10 ? vFOV -= 1.0 : vFOV = 10;//Limit vFOV to >= 10 degrees
 		break;
 	case GLUT_KEY_UP:
-		xAngle = xAngle < 89 ? xAngle += 1.0 : xAngle = 89;
+		xAngle = xAngle < 89 ? xAngle += 1.0 : xAngle = 89;//Limit xAngle rotation to <= 89 degrees
 		UpdateCamera();
 		break;
 	case GLUT_KEY_DOWN:
-		xAngle = xAngle > -89 ? xAngle -= 1.0 : xAngle = -89;
+		xAngle = xAngle > -89 ? xAngle -= 1.0 : xAngle = -89;//Limit xAngle rotation to >= -89 degrees
 		UpdateCamera();
 		break;
 	case GLUT_KEY_LEFT:
@@ -495,6 +489,7 @@ void SpecialFunc(int key, int x, int y)
 	Redisplay();
 }
 
+//Handle alphanumeric keys
 void KeyboardFunc(unsigned char c, int x, int y)
 {
 	switch (c)
@@ -527,6 +522,11 @@ void KeyboardFunc(unsigned char c, int x, int y)
 	Redisplay();
 }
 
+void MouseFunc(int x, int y, int z, int w)//Fixes flickering issues when clicking on whatever window isn't active
+{
+	Redisplay();
+}
+
 
 int main(int argc, char * argv[])
 {
@@ -542,7 +542,8 @@ int main(int argc, char * argv[])
 	glutKeyboardFunc(KeyboardFunc);
 	glutSpecialFunc(SpecialFunc);
 	glutDisplayFunc(FirstPersonDisplayFunc);
-	glutTimerFunc(1000 / 60, TimerFunc, 1000 / 60);
+	glutMouseFunc(MouseFunc);
+	glutTimerFunc(1000 / 144, TimerFunc, 1000 / 144);
 
 	glutInitWindowPosition(width, height);
 	glutInitWindowSize(tpWidth, tpHeight);
@@ -553,6 +554,7 @@ int main(int argc, char * argv[])
 	glutReshapeFunc(ThirdPersonReshapeFunc);
 	glutKeyboardFunc(KeyboardFunc);
 	glutSpecialFunc(SpecialFunc);
+	glutMouseFunc(MouseFunc);
 	glutDisplayFunc(ThirdPersonDisplayFunc);
 
 	glutMainLoop();
