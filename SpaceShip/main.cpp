@@ -27,12 +27,13 @@ int tpWidth = 1024;//Width of the third person window in pixels
 int tpHeight = 512;//Height of the third person window in pixels
 int lightPosition = 1;//Determines where the light is positioned.
 double vFOV = 50;//Vertical field of view in the first person window
-bool wireFrameMode = true;//Boolean to determine if the models are rendered as wireframes
-bool lighting = true; //Boolean to determine if lighting is on or off
-bool flatShading = false;//Boolean to determine if shading is flat or smooth
 float xAngle = 0.0;//Angle of the camera around the X axis
 float yAngle  = 90.0;//Angle of camera around the Y axis
 float lightAngle = 90.0;//Angle of the orbiting light around the Y axis
+bool wireFrameMode = true;//Boolean to determine if the models are rendered as wireframes
+bool lighting = true; //Boolean to determine if lighting is on or off
+bool flatShading = false;//Boolean to determine if shading is flat or smooth
+string lightPositionNames[6] = { "Camera", "Center", "X Axis", "Y Axis", "Z Axis", "Orbiting" };
 
 double cameraX = 0.0;//Camera's x position
 double cameraY = 0.0;//Camera's Y position
@@ -304,7 +305,7 @@ void FirstPersonDisplayFunc()
 	glTranslated(5.0, 140.0, 0.0);
 	glRasterPos2d(2.0, 2.0);
 	glScaled(.12, .12, .12);
-	DisplayString("l - toggles lighting\n1-6 - changes light position\nf - toggles flat shading\nw - toggles wireframe \nx - exits\nLeft / Right; Up / Down; Page Up / Page Down\n\n");
+	DisplayString("l - toggles lighting\n1-6 - changes light position Current: " + lightPositionNames[lightPosition - 1] + "\nf - toggles flat shading\nw - toggles wireframe \nx - exits\nLeft / Right; Up / Down; Page Up / Page Down\n\n");
 	glScaled(2.5, 2.5, 2.5);
 	DisplayString("Perspective View");
 	glMatrixMode(GL_MODELVIEW);
@@ -441,7 +442,6 @@ void ThirdPersonReshapeFunc(int w, int h)
 	ThirdPersonDisplayFunc();
 }
 
-
 void TimerFunc(int period)
 {
 	glutTimerFunc(period, TimerFunc, period);
@@ -526,7 +526,6 @@ void MouseFunc(int x, int y, int z, int w)//Fixes flickering issues when clickin
 {
 	Redisplay();
 }
-
 
 int main(int argc, char * argv[])
 {

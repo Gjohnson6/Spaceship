@@ -1,4 +1,4 @@
-﻿Build started 10/18/2015 7:02:08 PM.
+﻿Build started 10/18/2015 7:15:21 PM.
      1>Project "C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\SpaceShip\SpaceShip.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /IC:\Users\Grant/Documents/freeglut/include /IC:\Users\Grant\Documents\glm /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
@@ -7,13 +7,13 @@
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\Release\SpaceShip.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:C:\Users\Grant\Documents\freeglut\lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib freeglut.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\Release\SpaceShip.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG:incremental /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\Release\SpaceShip.lib" /MACHINE:X86 /SAFESEH Release\main.obj
          Release\Ship.obj
          Generating code
-         2 of 152 functions ( 1.3%) were compiled, the rest were copied from previous compilation.
-           1 functions were new in current compilation
-           0 functions had inline decision re-evaluated but remain unchanged
+         1 of 173 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+           0 functions were new in current compilation
+           3 functions had inline decision re-evaluated but remain unchanged
          Finished generating code
          SpaceShip.vcxproj -> C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\Release\SpaceShip.exe
      1>Done Building Project "C:\Users\Grant\Documents\Visual Studio 2015\Projects\Spaceship\SpaceShip\SpaceShip.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.71
+Time Elapsed 00:00:00.72
