@@ -244,7 +244,6 @@ void configureLighting()
 		glEnable(GL_LIGHT0);
 
 		glShadeModel(flatShading ? GL_FLAT : GL_SMOOTH);
-		
 	}
 	else
 	{
@@ -286,7 +285,6 @@ void FirstPersonDisplayFunc()
 	
 	configureLighting();
 	glRotated(45, 0.0, 1.0, 0.0);
-
 	DrawMany();	
 	
 	//Draw Text
@@ -368,7 +366,7 @@ void ThirdPersonDisplayFunc()
 	double hScale = tpWidth / (double)1024;
 	double vScale = tpHeight / (double)512;
 
-	glOrtho(-(25/vScale) * hScale, 25/vScale * hScale,  -(25), 25, 0, 100);
+	glOrtho(-(25/vScale) * hScale, 25/vScale * hScale,  -(25), 25, 0, 200);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -380,7 +378,7 @@ void ThirdPersonDisplayFunc()
 	//Z Axis Perspective
 	glViewport(0, 0, tpWidth/2, tpHeight);
 	glPushMatrix();
-	gluLookAt(0.0, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	
 	DrawThirdPerson();
 	
@@ -405,11 +403,11 @@ void ThirdPersonDisplayFunc()
 	//X Axis Perspective
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-(25 / vScale) * hScale, 25 / vScale * hScale, -(25), 25, 0, 100);
+	glOrtho(-(25 / vScale) * hScale, 25 / vScale * hScale, -(25), 25, 0, 200);
 	glMatrixMode(GL_MODELVIEW);
 
 	glViewport(tpWidth / 2, 0, tpWidth / 2, tpHeight);
-	gluLookAt(20.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
 	DrawThirdPerson();
 
