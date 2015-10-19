@@ -11,7 +11,6 @@
 using namespace std;
 using namespace glm;
 
-
 GLuint firstPersonWindow;
 GLuint thirdPersonWindow;
 HDC firstPersonHDC;
@@ -33,7 +32,7 @@ float lightAngle = 90.0;//Angle of the orbiting light around the Y axis
 bool wireFrameMode = true;//Boolean to determine if the models are rendered as wireframes
 bool lighting = true; //Boolean to determine if lighting is on or off
 bool flatShading = false;//Boolean to determine if shading is flat or smooth
-string lightPositionNames[6] = { "Camera", "Center", "X Axis", "Y Axis", "Z Axis", "Orbiting" };
+string lightPositionNames[6] = { "Camera", "Center", "X Axis", "Y Axis", "Z Axis", "Orbiting" };//Array of strings to hold names for the different light positions
 
 double cameraX = 0.0;//Camera's x position
 double cameraY = 0.0;//Camera's Y position
@@ -188,14 +187,14 @@ void DrawFrustum()
 	glPopMatrix();	
 }
 
-void orbitLight(GLfloat* lightPos)
+void OrbitLight(GLfloat* lightPos)
 {
 	lightAngle = (lightAngle + (360 / (1000/60.f) / 100.f));//Takes 10 seconds to complete an orbit. Divided by 60 to account for the fact that this should be called 60 times a second
 	lightPos[0] = float(15.0 * cos(DegreesToRadians(0)) * cos(DegreesToRadians(lightAngle)));
 	lightPos[2] = float(15.0 * cos(DegreesToRadians(0)) * sin(DegreesToRadians(lightAngle)));
 }
 
-void configureLighting()
+void ConfigureLighting()
 {
 	if (lighting)
 	{
@@ -226,7 +225,7 @@ void configureLighting()
 			lightAngle = 90.f;
 			break;
 		case 6://Orbiting
-			orbitLight(lightPos);
+			OrbitLight(lightPos);
 			break;
 		default:
 			break;
@@ -283,7 +282,7 @@ void FirstPersonDisplayFunc()
 	glLoadIdentity();
 	gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	
-	configureLighting();
+	ConfigureLighting();
 	glRotated(45, 0.0, 1.0, 0.0);
 	DrawMany();	
 	
@@ -320,7 +319,7 @@ void FirstPersonDisplayFunc()
 void DrawThirdPerson()
 {
 	glPolygonMode(GL_FRONT_AND_BACK, wireFrameMode ? GL_FILL : GL_LINE);
-	configureLighting();
+	ConfigureLighting();
 	glRotated(45, 0.0, 1.0, 0.0);
 	DrawMany();
 	glDisable(GL_LIGHTING);//Disable lighting so it doesn't affect anything but the rockets
@@ -426,7 +425,6 @@ void ThirdPersonDisplayFunc()
 	DisplayString("X Axis View");
 	glPopMatrix();
 
-
 	glutSwapBuffers();
 	glFlush();
 }
@@ -520,7 +518,8 @@ void KeyboardFunc(unsigned char c, int x, int y)
 	Redisplay();
 }
 
-void MouseFunc(int x, int y, int z, int w)//Fixes flickering issues when clicking on whatever window isn't active
+//Fixes flickering issues when clicking on whatever window isn't active
+void MouseFunc(int x, int y, int z, int w)
 {
 	Redisplay();
 }
@@ -540,7 +539,7 @@ int main(int argc, char * argv[])
 	glutSpecialFunc(SpecialFunc);
 	glutDisplayFunc(FirstPersonDisplayFunc);
 	glutMouseFunc(MouseFunc);
-	glutTimerFunc(1000 / 144, TimerFunc, 1000 / 144);
+	glutTimerFunc(1000 / 60, TimerFunc, 1000 / 60);
 
 	glutInitWindowPosition(width, height);
 	glutInitWindowSize(tpWidth, tpHeight);

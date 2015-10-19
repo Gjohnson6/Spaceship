@@ -18,7 +18,6 @@ Ship::Ship(double x, double y, double z)
 Ship::~Ship()
 {
 	glDeleteLists(ship_handler, 1);
-
 }
 
 void Ship::DrawShip()
@@ -57,7 +56,6 @@ void Ship::DrawShip()
 		glEndList();
 	}
 	glCallList(ship_handler);
-	//glDeleteLists(ship_handler, 1);
 }
 
 void Ship::DrawBody()
@@ -69,7 +67,6 @@ void Ship::DrawBody()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, blue);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white );
-
 
 	GLUquadricObj* quadric;
 	quadric = gluNewQuadric();
